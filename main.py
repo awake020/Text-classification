@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import os
 from data_io.data_SST_2 import DataIOSST2
+from models.text_CNN import TextCNN
 from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
 from seq_indexers.seq_indexer_base import SeqIndexerBase
 from models.MLP import MLP
@@ -24,7 +25,8 @@ parser.add_argument('--num_epoch', '-ne', type=int, default=100)
 parser.add_argument('--batch_size', '-bs', type=int, default=16)
 parser.add_argument('--dropout_rate', '-dr', type=float, default=0.4)
 parser.add_argument('--learning_rate', '-lr', type=float, default=0.001)
-parser.add_argument('--gpu', type=int, default=-1)
+parser.add_argument('--gpu', type=int, default=0)
+parser.add_argument('--model', type=str, choices=['CNN', 'MLP'])
 args = parser.parse_args()
 # model parameters
 
@@ -54,13 +56,20 @@ if __name__ == "__main__":
 
     if args.load is not None:
         model = torch.load(args.load)
-        if args.gpu >=0 :
+        if args.gpu >= 0:
             model.cuda(device=args.gpu)
     else:
-        model = MLP(embedding_indexer=seq_indexer,
-                    gpu=args.gpu,
-                    feat_num=label_indexer.__len__(),
-                    dropout=args.dropout_rate)
+        if args.model == 'MLP':
+            model = MLP(embedding_indexer=seq_indexer,
+                        gpu=args.gpu,
+                        feat_num=label_indexer.__len__(),
+                        dropout=args.dropout_rate)
+        elif args.model == 'CNN':
+            model = TextCNN(embedding_indexer=seq_indexer,
+                            gpu=args.gpu,
+                            feat_num=label_indexer.__len__(),
+                            dropout=args.dropout_rate,
+                            kernel_size=[2, 3, 5])
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),
@@ -107,7 +116,7 @@ if __name__ == "__main__":
 
         if dev_score > best_score:
             model.cpu()
-            torch.save(model, os.path.join(args.save_dir, 'model.hdf5'))
+            torch.save(model, os.path.join(args.save_dir, args.model + '.hdf5'))
             if args.gpu >= 0:
                 model.cuda(device=args.gpu)
             print('best model saved')
