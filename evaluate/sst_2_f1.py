@@ -2,7 +2,7 @@
 
 class sst2F1Eval(object):
     @staticmethod
-    def get_socre(predict, label):
+    def get_score(predict, label):
         TP = 0
         FP = 0
         FN = 0

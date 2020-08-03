@@ -1,0 +1,32 @@
+type: 'RNN'
+
+save :
+  version: '1'
+  path: 'save'
+
+hparas:
+  epoch_num: 20
+  optimizer: 'adam'
+  lr: 0.001
+  early_stop: True
+  early_num: 5
+
+model:
+  hidden_dim: 64
+  layer_num: 2
+  bidirectional: True
+  dropout: 0.5
+  fc_dim: [64]
+
+eval: 'acc'
+
+data:
+  path: 'data/SST-2'
+  batch_size: 16
+
+use_pre_embedding: True
+embedding:
+  name: 'glove'
+  embedding_path: 'data/glove/glove.6B.100d.txt'
+  emb_dim: 100
+  emb_delimiter: ' '

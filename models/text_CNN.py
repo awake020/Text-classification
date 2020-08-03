@@ -1,18 +1,33 @@
 import torch
 import torch.nn.functional as F
-
+import torch.nn as nn
+from models.basic_model import BasicModel
 from seq_indexers.seq_indexer_base import SeqIndexerBase
 from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
 from layers.layer_word_embeddings import LayerWordEmbeddings
 
 
-class TextCNN(torch.nn.Module) :
-    def __init__(self, embedding_indexer: SeqIndexerBaseEmbeddings, gpu, feat_num, dropout, kernel_size, channel=50):
+class TextCNN(BasicModel):
+    def __init__(self, embedding_indexer: SeqIndexerBaseEmbeddings,
+                 gpu,
+                 feat_num,
+                 dropout,
+                 kernel_size,
+                 fc_dim,
+                 cnn_channel=50):
         super(TextCNN, self).__init__()
         self.embedding = LayerWordEmbeddings(embedding_indexer)
-        self.convs = torch.nn.ModuleList([torch.nn.Conv2d(1, channel, [x, embedding_indexer.emb_dim]) for x in kernel_size])
-        self.fc = torch.nn.Linear(len(kernel_size) * channel, feat_num)
-        self.dropout = dropout
+        self.convs = torch.nn.ModuleList(
+            [torch.nn.Conv2d(1, cnn_channel, [x, embedding_indexer.emb_dim])
+             for x in kernel_size])
+        fc_layers = []
+        pre_dim = len(kernel_size) * cnn_channel
+        for dim in fc_dim:
+            fc_layers.append(nn.Linear(pre_dim, dim))
+            pre_dim = dim
+        fc_layers.append(nn.Linear(pre_dim, feat_num))
+        self.fc_layers = nn.ModuleList(fc_layers)
+        self.dropout = nn.Dropout(dropout)
         self.gpu = gpu
         if gpu >= 0:
             self.cuda(device=gpu)
@@ -24,24 +39,12 @@ class TextCNN(torch.nn.Module) :
 
     def forward(self, input:torch.Tensor, lens, mask):
         input = input.unsqueeze(dim=1)
-        input = self.embedding(input)
-        after_conv = torch.cat([self.conv_and_pool(conv, input) for conv in self.convs], dim=1)
-        out = F.dropout(after_conv, p=self.dropout)
-        out = self.fc(out)
+        input = self.dropout(self.embedding(input))
+        out = torch.cat([self.conv_and_pool(conv, input) for conv in self.convs], dim=1)
+        first = True
+        for layer in self.fc_layers:
+            if first == False:
+                out = F.relu(out)
+            first = False
+            out = layer(self.dropout(out))
         return out
-
-    def predict(self, texts, embedding_indexer: SeqIndexerBaseEmbeddings, label_indexer:SeqIndexerBase, batch_size):
-        lens = len(texts)
-        batch_num = (lens + batch_size - 1) // batch_size
-        ans = []
-        for i in range(batch_num) :
-            start = i * batch_size
-            end = min(start + batch_size, lens)
-            part = texts[start:end]
-            part, lengths, mask = embedding_indexer.add_padding_tensor(part, gpu=self.gpu)
-            pred = self.forward(part, lengths, mask)
-            pred = torch.argmax(pred, dim=-1, keepdim=False)
-            pred = pred.tolist()
-            pred = label_indexer.get_instance(pred)
-            ans.extend(pred)
-        return ans

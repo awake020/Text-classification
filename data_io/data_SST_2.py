@@ -6,17 +6,18 @@ from copy import deepcopy
 
 
 class DataIOSST2(object):
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, config):
+        self.path = config['path']
+        self.batch_size = config['batch_size']
         self.train_word, self.train_label, \
         self.dev_word, self.dev_label, \
         self.test_word, \
         self.test_label = self.read_train_dev_test()
 
     def read_train_dev_test(self):
-        train_word, train_label = self.read_data(self.args.data_dir + '/train.tsv')
-        dev_word, dev_label = self.read_data(self.args.data_dir + '/dev.tsv')
-        test_word, test_label = self.read_data(self.args.data_dir + '/test.tsv')
+        train_word, train_label = self.read_data(self.path + '/train.tsv')
+        dev_word, dev_label = self.read_data(self.path + '/dev.tsv')
+        test_word, test_label = self.read_data(self.path + '/test.tsv')
         return train_word, train_label, dev_word, dev_label, test_word, test_label
 
     @staticmethod
@@ -36,22 +37,28 @@ class DataIOSST2(object):
         csv.unregister_dialect('my')
         return data, label
 
-    def get_data_loader(self):
+    def get_eval_loader(self):
         data_sets = dict()
         data_sets['train'] = DataLoader(TorchDataset(self.train_word, self.train_label),
-                                        batch_size=self.args.batch_size,
-                                        shuffle=True,
+                                        batch_size=self.batch_size,
+                                        shuffle=False,
                                         collate_fn=self.__collate_fn)
 
         data_sets['dev'] = DataLoader(TorchDataset(self.dev_word, self.dev_label),
-                                      batch_size=self.args.batch_size,
-                                      shuffle=True,
+                                      batch_size=self.batch_size,
+                                      shuffle=False,
                                       collate_fn=self.__collate_fn)
         data_sets['test'] = DataLoader(TorchDataset(self.test_word, self.test_label),
-                                       batch_size=self.args.batch_size,
-                                       shuffle=True,
+                                       batch_size=self.batch_size,
+                                       shuffle=False,
                                        collate_fn=self.__collate_fn)
         return data_sets
+
+    def get_train_loader(self):
+        return DataLoader(TorchDataset(self.train_word, self.train_label),
+                          batch_size=self.batch_size,
+                          shuffle=True,
+                          collate_fn=self.__collate_fn)
 
     @staticmethod
     def __collate_fn(batch):
