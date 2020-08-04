@@ -93,7 +93,8 @@ class Process(object):
                 torch.save(self.model, os.path.join(self.config['save']['path'],
                                                     self.config['type'] + '_' +
                                                     self.config['save']['version'] + '.hdf5'))
+                best_score = dev_score
                 count = 0
-            if early_stop and count >= early_stop:
+            if early_stop and count >= early_num:
                 print('early stop')
                 break
