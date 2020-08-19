@@ -2,6 +2,7 @@ from models.MLP import MLP
 from models.text_rnn_attn import TextRNNAttn
 from models.text_CNN import TextCNN
 
+
 class ModelFactory(object):
     @staticmethod
     def get_model(config, args, seq_indexer, label_indexer):
@@ -22,4 +23,3 @@ class ModelFactory(object):
                        **config['model'])
         else:
             raise RuntimeError('no model')
-

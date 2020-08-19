@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import  torch
 
-class SeqIndexerBase(object):
+class Alphabet(object):
     """
     Storage and serialization a set of elements.
     """

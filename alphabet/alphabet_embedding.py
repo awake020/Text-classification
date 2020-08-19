@@ -1,11 +1,11 @@
-from seq_indexers.seq_indexer_base import SeqIndexerBase
+from alphabet.alphabet import Alphabet
 import numpy as np
 import torch
 from tqdm import tqdm
 
-class SeqIndexerBaseEmbeddings(SeqIndexerBase):
+class AlphabetEmbeddings(Alphabet):
     def __init__(self, name, embedding_path, emb_dim, emb_delimiter):
-        super(SeqIndexerBaseEmbeddings, self).__init__(name=name, if_use_pad=True, if_use_unk=True)
+        super(AlphabetEmbeddings, self).__init__(name=name, if_use_pad=True, if_use_unk=True)
         self.path = embedding_path
         self.embedding_vectors_list = list()
         self.emb_dim = emb_dim

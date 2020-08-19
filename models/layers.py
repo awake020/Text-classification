@@ -1,10 +1,9 @@
 import torch
-from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
-from layers.layer_base import LayerBase
+from alphabet.alphabet_embedding import AlphabetEmbeddings
 
 
-class LayerWordEmbeddings(LayerBase):
-    def __init__(self, embedding_indexer:SeqIndexerBaseEmbeddings, freeze_word_embeddings=False):
+class LayerWordEmbeddings(torch.nn.Module):
+    def __init__(self, embedding_indexer:AlphabetEmbeddings, freeze_word_embeddings=False):
         super(LayerWordEmbeddings, self).__init__()
         self.word_seq_indexer = embedding_indexer
         embedding_tensor = embedding_indexer.get_loaded_embeddings_tensor()

@@ -1,8 +1,8 @@
 import os
 from data_io.data_SST_2 import DataIOSST2
 from evaluate.eval_factory import EvalFactory
-from seq_indexers.seq_indexer_base import SeqIndexerBase
-from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
+from alphabet.alphabet import Alphabet
+from alphabet.alphabet_embedding import AlphabetEmbeddings
 import torch
 from models.model_factory import ModelFactory
 from tqdm import tqdm
@@ -14,9 +14,9 @@ class Process(object):
         self.args = args
         self.dataset = DataIOSST2(config['data'])
         self.train_loader = self.dataset.get_train_loader()
-        self.seq_indexer = SeqIndexerBaseEmbeddings(**config['embedding'])
+        self.seq_indexer = AlphabetEmbeddings(**config['embedding'])
         self.seq_indexer.load_embeddings_from_file()
-        self.label_indexer = SeqIndexerBase('label', False, False)
+        self.label_indexer = Alphabet('label', False, False)
         self.label_indexer.add_instance(self.dataset.train_label)
         self.model = self.get_model()
 

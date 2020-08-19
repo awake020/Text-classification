@@ -2,13 +2,12 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from models.basic_model import BasicModel
-from seq_indexers.seq_indexer_base import SeqIndexerBase
-from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
-from layers.layer_word_embeddings import LayerWordEmbeddings
+from alphabet.alphabet_embedding import AlphabetEmbeddings
+from models.layers import LayerWordEmbeddings
 
 
 class TextCNN(BasicModel):
-    def __init__(self, embedding_indexer: SeqIndexerBaseEmbeddings,
+    def __init__(self, embedding_indexer: AlphabetEmbeddings,
                  gpu,
                  feat_num,
                  dropout,

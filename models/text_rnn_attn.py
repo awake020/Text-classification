@@ -3,14 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from layers.layer_word_embeddings import LayerWordEmbeddings
+from models.layers import LayerWordEmbeddings
 from models.basic_model import BasicModel
-from seq_indexers.seq_indexer_base import SeqIndexerBase
-from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
+from alphabet.alphabet_embedding import AlphabetEmbeddings
 
 
 class TextRNNAttn(BasicModel):
-    def __init__(self, embedding_indexer: SeqIndexerBaseEmbeddings, gpu, feat_num,
+    def __init__(self, embedding_indexer: AlphabetEmbeddings, gpu, feat_num,
                  dropout, hidden_dim, layer_num, fc_dim, bidirectional=True):
         super(TextRNNAttn, self).__init__()
         self.embedding = LayerWordEmbeddings(embedding_indexer)
@@ -20,9 +19,11 @@ class TextRNNAttn(BasicModel):
         self.hidden_dim = hidden_dim
         self.layer_num = layer_num
         if layer_num >= 2:
-            self.lstm = nn.LSTM(embedding_indexer.emb_dim, hidden_dim, layer_num, batch_first=True, dropout=dropout, bidirectional=bidirectional)
+            self.lstm = nn.LSTM(embedding_indexer.emb_dim, hidden_dim, layer_num, batch_first=True, dropout=dropout,
+                                bidirectional=bidirectional)
         else:
-            self.lstm = nn.LSTM(embedding_indexer.emb_dim, hidden_dim, layer_num, batch_first=True, bidirectional=bidirectional)
+            self.lstm = nn.LSTM(embedding_indexer.emb_dim, hidden_dim, layer_num, batch_first=True,
+                                bidirectional=bidirectional)
         self.attn = nn.Parameter(torch.randn(self.direction * self.hidden_dim, 1, dtype=torch.float))
         fc_layers = []
         pre_dim = self.direction * self.hidden_dim
@@ -58,7 +59,7 @@ class TextRNNAttn(BasicModel):
             c0 = c0.cuda(0)
         return h0, c0
 
-    def forward(self, inputs:torch.Tensor, lens, mask):
+    def forward(self, inputs: torch.Tensor, lens, mask):
         batch_size = inputs.size(0)
         inputs = self.dropout(self.embedding(inputs))
         inputs, reverse_index = self.pack(inputs, lens)
@@ -75,13 +76,5 @@ class TextRNNAttn(BasicModel):
             if first == False:
                 out = F.relu(out)
             first = False
-            out =  layer(self.dropout(out))
+            out = layer(self.dropout(out))
         return out
-
-
-
-
-
-
-
-

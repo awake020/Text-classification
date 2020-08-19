@@ -1,13 +1,13 @@
 import torch
-from seq_indexers.seq_indexer_embedding_base import SeqIndexerBaseEmbeddings
-from seq_indexers.seq_indexer_base import SeqIndexerBase
+from alphabet.alphabet_embedding import AlphabetEmbeddings
+from alphabet.alphabet import Alphabet
 
 
 class BasicModel(torch.nn.Module):
     def __init__(self):
         super(BasicModel, self).__init__()
 
-    def predict(self, texts, embedding_indexer: SeqIndexerBaseEmbeddings, label_indexer: SeqIndexerBase, batch_size):
+    def predict(self, texts, embedding_indexer: AlphabetEmbeddings, label_indexer: Alphabet, batch_size):
         lens = len(texts)
         batch_num = (lens + batch_size - 1) // batch_size
         ans = []
