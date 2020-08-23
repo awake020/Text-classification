@@ -7,17 +7,17 @@ class ModelFactory(object):
     @staticmethod
     def get_model(config, args, seq_indexer, label_indexer):
         if config['type'] == 'RNN':
-            return TextRNNAttn(embedding_indexer=seq_indexer,
+            return TextRNNAttn(embedding_alphabet=seq_indexer,
                                gpu=args.gpu,
                                feat_num=label_indexer.__len__(),
                                **config['model'])
         elif config['type'] == 'CNN':
-            return TextCNN(embedding_indexer=seq_indexer,
+            return TextCNN(embedding_alphabet=seq_indexer,
                            gpu=args.gpu,
                            feat_num=label_indexer.__len__(),
                            **config['model'])
         elif config['type'] == 'MLP':
-            return MLP(embedding_indexer=seq_indexer,
+            return MLP(embedding_alphabet=seq_indexer,
                        gpu=args.gpu,
                        feat_num=label_indexer.__len__(),
                        **config['model'])

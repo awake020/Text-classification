@@ -1,18 +1,17 @@
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-from models.basic_model import BasicModel
+from models.basic_model import BasicModel, LayerWordEmbeddings
 from alphabet.alphabet_embedding import AlphabetEmbeddings
-from models.layers import LayerWordEmbeddings
 
 
 class MLP(BasicModel):
-    def __init__(self, embedding_indexer: AlphabetEmbeddings, gpu, feat_num, dropout, fc_dim):
+    def __init__(self, embedding_alphabet: AlphabetEmbeddings, gpu, feat_num, dropout, fc_dim):
         super(MLP, self).__init__()
-        self.embedding = LayerWordEmbeddings(embedding_indexer)
+        self.embedding = LayerWordEmbeddings(embedding_alphabet)
         self.dropout = torch.nn.Dropout(dropout)
         fc_layers = []
-        pre_dim = embedding_indexer.emb_dim
+        pre_dim = embedding_alphabet.emb_dim
         for dim in fc_dim:
             fc_layers.append(nn.Linear(pre_dim, dim))
             pre_dim = dim

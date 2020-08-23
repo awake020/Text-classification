@@ -3,26 +3,25 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from models.layers import LayerWordEmbeddings
-from models.basic_model import BasicModel
+from models.basic_model import BasicModel, LayerWordEmbeddings
 from alphabet.alphabet_embedding import AlphabetEmbeddings
 
 
 class TextRNNAttn(BasicModel):
-    def __init__(self, embedding_indexer: AlphabetEmbeddings, gpu, feat_num,
+    def __init__(self, embedding_alphabet: AlphabetEmbeddings, gpu, feat_num,
                  dropout, hidden_dim, layer_num, fc_dim, bidirectional=True):
         super(TextRNNAttn, self).__init__()
-        self.embedding = LayerWordEmbeddings(embedding_indexer)
+        self.embedding = LayerWordEmbeddings(embedding_alphabet)
         self.gpu = gpu
         self.dropout = nn.Dropout(dropout)
         self.direction = 2 if bidirectional else 1
         self.hidden_dim = hidden_dim
         self.layer_num = layer_num
         if layer_num >= 2:
-            self.lstm = nn.LSTM(embedding_indexer.emb_dim, hidden_dim, layer_num, batch_first=True, dropout=dropout,
+            self.lstm = nn.LSTM(embedding_alphabet.emb_dim, hidden_dim, layer_num, batch_first=True, dropout=dropout,
                                 bidirectional=bidirectional)
         else:
-            self.lstm = nn.LSTM(embedding_indexer.emb_dim, hidden_dim, layer_num, batch_first=True,
+            self.lstm = nn.LSTM(embedding_alphabet.emb_dim, hidden_dim, layer_num, batch_first=True,
                                 bidirectional=bidirectional)
         self.attn = nn.Parameter(torch.randn(self.direction * self.hidden_dim, 1, dtype=torch.float))
         fc_layers = []

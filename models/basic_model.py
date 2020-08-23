@@ -7,7 +7,7 @@ class BasicModel(torch.nn.Module):
     def __init__(self):
         super(BasicModel, self).__init__()
 
-    def predict(self, texts, embedding_indexer: AlphabetEmbeddings, label_indexer: Alphabet, batch_size):
+    def predict(self, texts, embedding_alphabet: AlphabetEmbeddings, label_alphabet: Alphabet, batch_size):
         lens = len(texts)
         batch_num = (lens + batch_size - 1) // batch_size
         ans = []
@@ -15,10 +15,22 @@ class BasicModel(torch.nn.Module):
             start = i * batch_size
             end = min(start + batch_size, lens)
             part = texts[start:end]
-            part, lengths, mask = embedding_indexer.add_padding_tensor(part, gpu=self.gpu)
+            part, lengths, mask = embedding_alphabet.add_padding_tensor(part, gpu=self.gpu)
             pred = self.forward(part, lengths, mask)
             pred = torch.argmax(pred, dim=-1, keepdim=False)
             pred = pred.tolist()
-            pred = label_indexer.get_instance(pred)
+            pred = label_alphabet.get_instance(pred)
             ans.extend(pred)
         return ans
+
+
+class LayerWordEmbeddings(torch.nn.Module):
+    def __init__(self, embedding_alphabet:AlphabetEmbeddings, freeze_word_embeddings=False):
+        super(LayerWordEmbeddings, self).__init__()
+        self.word_seq_indexer = embedding_alphabet
+        embedding_tensor = embedding_alphabet.get_loaded_embeddings_tensor()
+        self.embeddings = torch.nn.Embedding.from_pretrained(embeddings=embedding_tensor, freeze=freeze_word_embeddings)
+
+    def forward(self, input_tensor): # shape: batch_size x max_seq_len
+        word_embeddings_feature = self.embeddings(input_tensor) # shape: batch_size x max_seq_len x output_dim
+        return word_embeddings_feature

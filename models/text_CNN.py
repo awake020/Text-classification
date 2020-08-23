@@ -1,13 +1,12 @@
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-from models.basic_model import BasicModel
+from models.basic_model import BasicModel, LayerWordEmbeddings
 from alphabet.alphabet_embedding import AlphabetEmbeddings
-from models.layers import LayerWordEmbeddings
 
 
 class TextCNN(BasicModel):
-    def __init__(self, embedding_indexer: AlphabetEmbeddings,
+    def __init__(self, embedding_alphabet: AlphabetEmbeddings,
                  gpu,
                  feat_num,
                  dropout,
@@ -15,9 +14,9 @@ class TextCNN(BasicModel):
                  fc_dim,
                  cnn_channel=50):
         super(TextCNN, self).__init__()
-        self.embedding = LayerWordEmbeddings(embedding_indexer)
+        self.embedding = LayerWordEmbeddings(embedding_alphabet)
         self.convs = torch.nn.ModuleList(
-            [torch.nn.Conv2d(1, cnn_channel, [x, embedding_indexer.emb_dim])
+            [torch.nn.Conv2d(1, cnn_channel, [x, embedding_alphabet.emb_dim])
              for x in kernel_size])
         fc_layers = []
         pre_dim = len(kernel_size) * cnn_channel
