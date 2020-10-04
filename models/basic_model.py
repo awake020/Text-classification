@@ -24,12 +24,15 @@ class BasicModel(torch.nn.Module):
         return ans
 
 
-class LayerWordEmbeddings(torch.nn.Module):
-    def __init__(self, embedding_alphabet:AlphabetEmbeddings, freeze_word_embeddings=False):
-        super(LayerWordEmbeddings, self).__init__()
-        self.word_seq_indexer = embedding_alphabet
-        embedding_tensor = embedding_alphabet.get_loaded_embeddings_tensor()
-        self.embeddings = torch.nn.Embedding.from_pretrained(embeddings=embedding_tensor, freeze=freeze_word_embeddings)
+class WordEmbeddings(torch.nn.Module):
+    def __init__(self, alphabet:AlphabetEmbeddings, freeze_word_embeddings=False):
+        super(WordEmbeddings, self).__init__()
+        self.word_seq_indexer = alphabet
+        if self.word_seq_indexer.use_pre_embedding:
+            embedding_tensor = alphabet.get_loaded_embeddings_tensor()
+            self.embeddings = torch.nn.Embedding.from_pretrained(embeddings=embedding_tensor, freeze=freeze_word_embeddings)
+        else:
+            self.embeddings = torch.nn.Embedding(len(alphabet), alphabet.emb_dim)
 
     def forward(self, input_tensor): # shape: batch_size x max_seq_len
         word_embeddings_feature = self.embeddings(input_tensor) # shape: batch_size x max_seq_len x output_dim

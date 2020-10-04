@@ -17,6 +17,8 @@ class Process(object):
         self.seq_alphabet = seq_alphabet
         self.label_alphabet = label_alphabet
         self.model = model
+        if self.args.gpu >= 0:
+            model.cuda(device=self.args.gpu)
         self.optimizer = self.get_optimizer(config['hparas'])
         self.criterion = torch.nn.CrossEntropyLoss()
         self.evaluator = EvalFactory().get_eval(config['eval'])

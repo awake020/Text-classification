@@ -38,16 +38,18 @@ if __name__ == "__main__":
 
     # get dataset and alphabets
     dataset = DataIOSST2(config['data'])
-    seq_alphabet = AlphabetEmbeddings(**config['embedding'])
-    seq_alphabet.load_embeddings_from_file()
+    if config['use_pre_embedding']:
+        seq_alphabet = AlphabetEmbeddings(**config['embedding'])
+        seq_alphabet.load_embeddings_from_file()
+    else:
+        seq_alphabet = AlphabetEmbeddings(**config['embedding'])
+        seq_alphabet.add_instance(dataset.train_word)
     label_alphabet = Alphabet('label', False, False)
     label_alphabet.add_instance(dataset.train_label)
 
     # get model
     if args.load is not None:
         model = torch.load(args.load)
-        if args.gpu >= 0:
-            model.cuda(device=args.gpu)
     else:
         model = ModelFactory.get_model(config, args, seq_alphabet, label_alphabet)
 

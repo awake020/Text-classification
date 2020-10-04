@@ -12,6 +12,7 @@ class AlphabetEmbeddings(Alphabet):
         self.emb_delimiter = emb_delimiter
         self.add_emb_vector(self.generate_zero_emb_vector())
         self.add_emb_vector(self.generate_random_emb_vector())
+        self.use_pre_embedding = False
 
     def load_embeddings_from_file(self):
         for k, line in tqdm(enumerate(open(self.path))):
@@ -19,6 +20,7 @@ class AlphabetEmbeddings(Alphabet):
             self.add_instance(values[0])
             emb_vector = list(map(lambda t: float(t), filter(lambda n: n and not n.isspace(), values[1:])))
             self.add_emb_vector(emb_vector)
+        self.use_pre_embedding = True
 
     def generate_zero_emb_vector(self):
         if self.emb_dim == 0:

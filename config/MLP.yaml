@@ -20,7 +20,7 @@ data:
   path: 'data/SST-2'
   batch_size: 16
 
-use_pre_embedding: True
+use_pre_embedding: False
 embedding:
   name: 'glove'
   embedding_path: 'data/glove/glove.6B.100d.txt'
